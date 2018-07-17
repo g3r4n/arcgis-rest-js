@@ -271,6 +271,18 @@ export function getItemData(
 /**
  * Update an Item
  *
+ * * ```js
+ * import { updateItem } from '@esri/arcgis-rest-items';
+ *
+ * updateItem({
+ *   authentication: userSession,
+ *   item: {
+ *     id: "3ef",
+ *     description: "A three hour tour"
+ *   }
+ * })
+ * ```
+ *
  * @param item - The item to update.
  * @param requestOptions - Options for the request.
  * @returns A Promise that resolves with the status of the operation.
