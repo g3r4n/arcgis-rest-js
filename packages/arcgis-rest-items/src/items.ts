@@ -10,12 +10,12 @@ import {
 import { IItem, IPagingParams } from "@esri/arcgis-rest-common-types";
 import { UserSession } from "@esri/arcgis-rest-auth";
 
-interface IItemAdd extends IItem {
+export interface IItemAdd extends IItem {
   title: string;
   type: string;
 }
 
-interface IItemUpdate extends IItem {
+export interface IItemUpdate extends IItem {
   id: string;
 }
 
@@ -23,9 +23,6 @@ export interface IItemRequestOptions extends IRequestOptions {
   item: IItem;
 }
 
-// * @param id - Item Id
-// * @param owner - Item owner username
-// * @param data - Javascript object to store
 export interface IItemIdRequestOptions extends IRequestOptions {
   /**
    * Unique identifier of the item.
@@ -65,6 +62,10 @@ interface IItemCrudRequestOptions extends IRequestOptions {
    * Folder to house the item.
    */
   folder?: string;
+  /**
+   * ArcGIS Online content cannot be manipulated anonymously.
+   */
+  authentication: UserSession;
 }
 
 export interface IItemAddRequestOptions extends IItemCrudRequestOptions {
@@ -73,6 +74,13 @@ export interface IItemAddRequestOptions extends IItemCrudRequestOptions {
 
 export interface IItemUpdateRequestOptions extends IItemCrudRequestOptions {
   item: IItemUpdate;
+}
+
+export interface IItemRemoveRequestOptions extends IItemIdRequestOptions {
+  /**
+   * ArcGIS Online content cannot be manipulated anonymously.
+   */
+  authentication: UserSession;
 }
 
 // this interface still needs to be docced
@@ -169,6 +177,9 @@ export function createItemInFolder(
 /**
  * Create an Item in the user's root folder
  *
+ * ```js
+ * import { createItem } from '@esri/arcgis-rest-items';
+ *
  * createItem({
  *   authentication: userSession,
  *   item: {
@@ -176,6 +187,7 @@ export function createItemInFolder(
  *     type: "Webmap"
  *   }
  * })
+ * ```
  *
  * @param requestOptions - Options for the request
  */
@@ -282,11 +294,21 @@ export function updateItem(
 /**
  * Remove an item from the portal
  *
+ * *
+ * ```js
+ * import { removeItem } from '@esri/arcgis-rest-items';
+ *
+ * removeItem({
+ *   authentication: userSession,
+ *   id: "3ef"
+ * })
+ * ```
+ *
  * @param requestOptions - Options for the request
  * @returns A Promise that deletes an item.
  */
 export function removeItem(
-  requestOptions: IItemIdRequestOptions
+  requestOptions: IItemRemoveRequestOptions
 ): Promise<any> {
   const owner = determineOwner(requestOptions);
   const url = `${getPortalUrl(requestOptions)}/content/users/${owner}/items/${
