@@ -10,6 +10,10 @@ import {
 import { IItem, IPagingParams } from "@esri/arcgis-rest-common-types";
 import { UserSession } from "@esri/arcgis-rest-auth";
 
+interface IItemOwner extends IItem {
+  owner: string;
+}
+
 export interface IItemAdd extends IItem {
   title: string;
   type: string;
@@ -154,9 +158,7 @@ export function searchItems(
 export function createItemInFolder(
   requestOptions: IItemAddRequestOptions
 ): Promise<any> {
-  const session = requestOptions.authentication as UserSession;
-  const owner =
-    requestOptions.owner || requestOptions.item.owner || session.username;
+  const owner = determineOwner(requestOptions);
 
   const baseUrl = `${getPortalUrl(requestOptions)}/content/users/${owner}`;
   let url = `${baseUrl}/addItem`;
@@ -290,9 +292,10 @@ export function getItemData(
 export function updateItem(
   requestOptions: IItemUpdateRequestOptions
 ): Promise<any> {
-  const url = `${getPortalUrl(requestOptions)}/content/users/${
-    requestOptions.item.owner
-  }/items/${requestOptions.item.id}/update`;
+  const owner = determineOwner(requestOptions);
+  const url = `${getPortalUrl(requestOptions)}/content/users/${owner}/items/${
+    requestOptions.item.id
+  }/update`;
 
   // serialize the item into something Portal will accept
   requestOptions.params = {
@@ -455,7 +458,15 @@ function serializeItem(item: IItem): any {
   return clone;
 }
 
-function determineOwner(requestOptions: IItemIdRequestOptions): string {
+/**
+ * requestOptions.owner is given priority, requestOptions.item.owner will be checked next. If neither are present, authentication.username will be assumed.
+ */
+function determineOwner(requestOptions: any): string {
   const session = requestOptions.authentication as UserSession;
-  return requestOptions.owner || session.username;
+  if (requestOptions.owner) {
+    return requestOptions.owner;
+  }
+  if (requestOptions.item && requestOptions.item.owner) {
+    return requestOptions.item.owner;
+  } else return session.username;
 }
