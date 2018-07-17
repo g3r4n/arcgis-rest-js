@@ -25,3 +25,15 @@ export const ItemDataResponse: any = {
     key: "value"
   }
 };
+
+export function ItemDataFileResponse() {
+  /* istanbul ignore next, this try catch is only for Node.js */
+  if (typeof File !== "undefined" && File) {
+    return new File(["foo"], "foo.zip", { type: "application/zip" });
+  } else {
+    const fs = require("fs");
+    return fs.createReadStream(
+      "./packages/arcgis-rest-items/test/mocks/foo.zip"
+    );
+  }
+}

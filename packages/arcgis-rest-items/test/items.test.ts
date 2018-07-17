@@ -22,7 +22,8 @@ import { SearchResponse } from "./mocks/search";
 import {
   ItemSuccessResponse,
   ItemResponse,
-  ItemDataResponse
+  ItemDataResponse,
+  ItemDataFileResponse
 } from "./mocks/item";
 
 import {
@@ -137,6 +138,30 @@ describe("search", () => {
         const [url, options]: [string, RequestInit] = fetchMock.lastCall("*");
         expect(url).toEqual(
           "https://www.arcgis.com/sharing/rest/content/items/3ef/data?f=json"
+        );
+        expect(options.method).toBe("GET");
+        done();
+      })
+      .catch(e => {
+        fail(e);
+      });
+  });
+
+  it("should return binary item data by id", done => {
+    // havent figured out how to mock this yet
+    // https://github.com/wheresrhys/fetch-mock/issues/314
+    fetchMock.once("*", {
+      sendAsJson: false,
+      body: ItemDataFileResponse,
+      headers: { "Content-Type": "application/zip" }
+    });
+
+    getItemData("3ef", { file: true })
+      .then(response => {
+        expect(fetchMock.called()).toEqual(true);
+        const [url, options]: [string, RequestInit] = fetchMock.lastCall("*");
+        expect(url).toEqual(
+          "https://www.arcgis.com/sharing/rest/content/items/3ef/data"
         );
         expect(options.method).toBe("GET");
         done();

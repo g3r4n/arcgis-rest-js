@@ -14,10 +14,6 @@ export interface IItemRequestOptions extends IUserRequestOptions {
   item: IItem;
 }
 
-// * @param id - Item Id
-// * @param owner - Item owner username
-// * @param data - Javascript object to store
-
 export interface IItemIdRequestOptions extends IUserRequestOptions {
   /**
    * Unique identifier of the item.
@@ -70,6 +66,10 @@ export interface ISearchRequest extends IPagingParams {
 
 export interface ISearchRequestOptions extends IRequestOptions {
   searchForm?: ISearchRequest;
+}
+
+export interface IItemDataRequestOptions extends IRequestOptions {
+  file?: boolean;
 }
 
 /**
@@ -216,23 +216,25 @@ export function getItem(
 
 /**
  * Get the /data for an item.
- * Note: Some items do not return json from /data
- * and this method will throw if that is the case.
- *
  * @param id - Item Id
  * @param requestOptions - Options for the request
  * @returns A Promise that will resolve with the json data for the item.
  */
 export function getItemData(
   id: string,
-  requestOptions?: IRequestOptions
+  requestOptions?: IItemDataRequestOptions
 ): Promise<any> {
   const url = `${getPortalUrl(requestOptions)}/content/items/${id}/data`;
   // default to a GET request
-  const options: IRequestOptions = {
-    ...{ httpMethod: "GET" },
+  const options: IItemDataRequestOptions = {
+    ...{ httpMethod: "GET", params: {} },
     ...requestOptions
   };
+
+  if (options.file) {
+    options.params.f = null;
+  }
+
   return request(url, options);
 }
 
@@ -384,7 +386,7 @@ function serializeItem(item: IItem): any {
   // create a clone so we're not messing with the original
   const clone = JSON.parse(JSON.stringify(item));
   // join keywords and tags...
-  const { typeKeywords=[], tags=[] } = item;
+  const { typeKeywords = [], tags = [] } = item;
   clone.typeKeywords = typeKeywords.join(", ");
   clone.tags = tags.join(", ");
   // convert .data to .text

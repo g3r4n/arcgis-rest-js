@@ -26,7 +26,8 @@ export type ResponseFormats =
   | "text"
   | "html"
   | "image"
-  | "zip";
+  | "zip"
+  | null;
 
 export interface IParams {
   f?: ResponseFormats;
@@ -167,7 +168,11 @@ export function request(
 
       if (fetchOptions.method === "GET") {
         // encode the parameters into the query string
-        const urlWithQueryString = url + "?" + encodeQueryString(params);
+        const queryParams = encodeQueryString(params);
+        // dont append a '?' unless parameters are actually present
+        const urlWithQueryString =
+          queryParams === "" ? url : url + "?" + encodeQueryString(params);
+
         if (
           options.maxUrlLength &&
           urlWithQueryString.length > options.maxUrlLength
@@ -220,8 +225,12 @@ export function request(
         /* istanbul ignore next blob responses are difficult to make cross platform we will just have to trust the isomorphic fetch will do its job */
         case "image":
           return response.blob();
-        /* istanbul ignore next blob responses are difficult to make cross platform we will just have to trust the isomorphic fetch will do its job */
+        /* istanbul ignore next */
         case "zip":
+          return response.blob();
+        /* istanbul ignore next */
+        default:
+          // someday we may need to handle JSON payloads when no f= parameter is set too
           return response.blob();
       }
     })
