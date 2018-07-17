@@ -53,7 +53,7 @@ export interface IItemResourceRequestOptions extends IItemIdRequestOptions {
   resource?: string;
 }
 
-interface IItemCrudRequestOptions extends IRequestOptions {
+export interface IItemCrudRequestOptions extends IRequestOptions {
   /**
    * The owner of the item. If this property is not present, `item.owner` will be passed, or lastly `authentication.username`.
    */
